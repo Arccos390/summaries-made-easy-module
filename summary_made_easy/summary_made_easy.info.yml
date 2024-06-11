@@ -1,0 +1,5 @@
+name: 'summary_made_easy'
+type: module
+description: 'Using ChatGPT, summarize a node&#039;s content to save time from the content editor. The module is highly customizable.'
+package: Custom
+core_version_requirement: ^10 || ^11

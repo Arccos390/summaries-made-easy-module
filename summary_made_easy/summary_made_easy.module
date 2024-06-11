@@ -1,0 +1,117 @@
+<?php
+
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\InvokeCommand;
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * @file
+ * Primary module hooks for summary_made_easy module.
+ */
+
+/**
+ * Implements hook_form_alter().
+ */
+function summary_made_easy_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // Ensure the targeted field exists in the form.
+  if (strpos($form_id, 'node_') === FALSE || strpos($form_id, '_edit_form') === FALSE) {
+    return;
+  }
+
+  // Load the configuration.
+  $config = \Drupal::config('summary_made_easy.settings');
+  $node = $form_state->getFormObject()->getEntity();
+  $content_type_id = $node->getType();
+
+  // Retrieve all settings related to the current content type.
+  $fields = $config->get("content_types_button.{$content_type_id}");
+
+  if (isset($fields)) {
+    foreach($fields as $field_name => $field_value) {
+      if ($field_value === 1) {
+        // Define the AJAX button.
+        $form[$field_name]['generate_summary_button']  = [
+          '#type' => 'button',
+          '#value' => t('Generate Text'),
+          '#ajax' => [
+            'callback' => 'summary_generate_callback',
+            'wrapper' => 'ajax-button-wrapper-' . $field_name,
+            'effect' => 'fade',
+          ],
+          // @todo Do it with #options (parameters).
+          '#name' => $field_name . '_button',
+        ];
+      }
+    }
+  }
+}
+
+/**
+ * AJAX callback function.
+ */
+function summary_generate_callback(array &$form, FormStateInterface $form_state): AjaxResponse {
+  $response = new AjaxResponse();
+
+  // Get the trigger element.
+  $trigger = $form_state->getTriggeringElement();
+
+  // Get the button name to identify which button was clicked.
+  $button_name = $trigger['#name'];
+  // Determine the field name based on the button name.
+  $field_name_button = str_replace('_button', '', $button_name);
+
+  $config = \Drupal::config('summary_made_easy.settings');
+  $node = $form_state->getFormObject()->getEntity();
+  $content_type_id = $node->getType();
+
+  // Retrieve all settings related to the current content type.
+  $fields = $config->get("content_types_prompt.{$content_type_id}");
+
+  $prompt = $config->get("prompt");
+  if (isset($fields)) {
+    foreach($fields as $field_name => $field_value) {
+      // @todo Refactor that.
+      if ($field_value === 1) {
+        $prompt .= $form_state->getValue($field_name)[0]['value'];
+        $prompt .= "\n";
+      }
+      // For the text_and_summary field.
+      if ($field_value['value'] === 1) {
+        $prompt .= $form_state->getValue($field_name)[0]['value'];
+        $prompt .= "\n";
+      }
+      if ($field_value['summary'] === 1) {
+        $prompt .= $form_state->getValue($field_name)[0]['summary'];
+        $prompt .= "\n";
+      }
+    }
+  }
+
+  // @todo Make only one function that you will call to get the response from OpenAI.
+  // Get the API key from the configuration
+  $api_key = $config->get('api');
+
+  // Initialize the OpenAI client
+  $client = OpenAI::client($api_key);
+
+  // Make the request to OpenAI
+  $result = '';
+  try {
+    $openaiResponse = $client->chat()->create([
+      'model' => $config->get('openai_model'),
+      'messages' => [
+        ['role' => 'user', 'content' => strip_tags($prompt)],
+      ],
+    ]);
+
+    if (!empty($openaiResponse->choices[0]->message->content)) {
+      $result = $openaiResponse->choices[0]->message->content;
+    }
+  } catch (\Exception $e) {
+    // @todo Log the error message in the
+  }
+
+  // Update the textarea with the response.
+  $selector_field_name = str_replace('_', '-', $field_name_button);
+  return $response->addCommand(new InvokeCommand("#edit-{$selector_field_name}-0-value", 'val', [$result]));
+}

@@ -1,0 +1,16 @@
+# Schema for the configuration files of the summary_made_easy module.
+summary_made_easy.settings:
+  type: config_object
+  label: 'Summary made easy settings'
+  mapping:
+    all_strings:
+      type: string
+      label: 'All strings for summary made easy module'
+
+field.widget.settings.generate_summary_button:
+  type: mapping
+  label: 'Generate Summary widget settings'
+  mapping:
+    size:
+      type: boolean
+      label: 'Generate Summary Button'

@@ -1,0 +1,5 @@
+summary_made_easy.settings:
+  title: Summary Made Easy Settings
+  parent: system.admin_config_content
+  route_name: summary_made_easy.settings
+  weight: 10

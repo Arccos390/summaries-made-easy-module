@@ -1,0 +1,17 @@
+summary_made_easy.settings_tab:
+  route_name: summary_made_easy.settings
+  title: Settings
+  weight: 5
+  base_route: summary_made_easy.settings
+
+summary_made_easy.test_tab:
+  route_name: summary_made_easy.settings_test
+  title: Test
+  weight: 10
+  base_route: summary_made_easy.settings
+
+summary_made_easy.api_config_tab:
+  route_name: summary_made_easy.settings_api
+  title: API
+  weight: 15
+  base_route: summary_made_easy.settings

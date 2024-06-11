@@ -1,0 +1,24 @@
+summary_made_easy.settings:
+  path: '/admin/config/content/summary-made-easy'
+  defaults:
+    _title: 'Summary Made Ease Settings'
+    _description: 'test'
+    _form: 'Drupal\summary_made_easy\Form\SummaryMadeEasySettingsForm'
+  requirements:
+    _permission: 'administer site configuration'
+
+summary_made_easy.settings_test:
+  path: '/admin/config/content/summary-made-easy/test'
+  defaults:
+    _title: 'Prompt Test'
+    _form: 'Drupal\summary_made_easy\Form\SummaryMadeEasySettingsTestForm'
+  requirements:
+    _permission: 'administer site configuration'
+
+summary_made_easy.settings_api:
+  path: '/admin/config/content/summary-made-easy/api'
+  defaults:
+    _title: 'API Configuration'
+    _form: 'Drupal\summary_made_easy\Form\SummaryMadeEasySettingsApiForm'
+  requirements:
+    _permission: 'administer site configuration'
